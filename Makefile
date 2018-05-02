@@ -1,16 +1,41 @@
-SDCC=sdcc
-SDLD=sdld
-OBJECTS=blinky.ihx uart.ihx sp_test.ihx
 
-.PHONY: all clean flash
 
-all: $(OBJECTS)
+PROJECT=test
+
+#BUILD=Debug
+
+ifndef BUILD
+	BUILD=Debug
+endif
+
+CC = sdcc
+LD = sdld
+CFLAGS = -mstm8  
+LDFLAGS = -lstm8 --out-fmt-ihx
+
+SRCS := $(wildcard *.c)
+OBJS := $(patsubst %.c,$(BUILD)/%.rel,$(SRCS))
+DEPS := $(patsubst %.c,$(BUILD)/%.d,$(SRCS))
+
+TARGET=$(BUILD)/$(PROJECT).ihx
+
+.PHONY: all clean
+
+all:MKDIR  $(TARGET)
+
+MKDIR:
+	@test -d $(BUILD) || mkdir -p $(BUILD)
+
+$(DEPS):$(BUILD)/%.d:%.c
+	$(CC) -MM $< > $@
+
+-include $(DEPS)
+
+$(BUILD)/%.rel:%.c
+	$(CC) -c $(CFLAGS) $< -o $@
+
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 clean:
-	rm -f $(OBJECTS)
-
-flash: $(OBJECT).ihx
-	stm8flash -cstlink -pstm8l150 -w $(OBJECT).ihx
-
-%.ihx: %.c
-	$(SDCC) -lstm8 -mstm8 --out-fmt-ihx $(CFLAGS) $(LDFLAGS) $<
+	@rm -f $(BUILD)/*

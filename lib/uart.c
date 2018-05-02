@@ -1,5 +1,5 @@
 #include <string.h>
-#include "stm8l.h"
+#include "../stm8l.h"
 
 int uart_write(const char *str) {
 	char i;
@@ -10,7 +10,7 @@ int uart_write(const char *str) {
 	return(i); // Bytes sent
 }
 
-int main() {
+void test() {
 	unsigned long i = 0;
 
 	CLK_DIVR = 0x00; // Set the frequency to 16 MHz
