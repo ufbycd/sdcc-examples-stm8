@@ -1,14 +1,16 @@
 
 
-PROJECT=test
-SRC_DIRS := . lib
-INCS := $(SRC_DIRS)
+PROJECT = test
+MCU = STM8S103
+SRC_DIRS := 
+INCS := .
 #BUILD=Debug
 
 CC = sdcc
 LD = sdld
-CFLAGS := -mstm8 $(foreach i, $(INCS), -I"$(i)")
+CFLAGS := -mstm8
 LDFLAGS := -lstm8 --out-fmt-ihx
+
 
 ifndef BUILD
 	BUILD=Debug
@@ -22,14 +24,19 @@ endif
 
 BUILD_PATH = $(BUILD)
 
-SRCS := $(wildcard $(foreach d, $(SRC_DIRS), $(d)/*.c))
+SRCS := $(wildcard *.c)
+
+
+-include lib/subdir.mk
+-include STM8S_StdPeriph_Driver/subdir.mk
+
 OBJS := $(patsubst %.c, $(BUILD_PATH)/%.rel, $(SRCS))
 DEPS := $(patsubst %.c, $(BUILD_PATH)/%.d, $(SRCS))
 
-#-include lib/subdir.mk
+CFLAGS += $(foreach i, $(INCS), -I"$(i)") -D$(MCU)
 
 TARGET = $(BUILD)/$(PROJECT).ihx
-BUILD_DIRS = $(foreach d, $(SRC_DIRS), $(BUILD)/$(d))
+BUILD_DIRS = $(BUILD) $(foreach d, $(SRC_DIRS), $(BUILD)/$(d))
 
 .PHONY: all clean MKDIR
 
@@ -39,13 +46,12 @@ MKDIR:
 	@${foreach d, $(BUILD_DIRS), $(shell test -d $(d) || mkdir -p $(d))}
 	
 $(DEPS):$(BUILD_PATH)/%.d:%.c | MKDIR
-	$(CC) -MM $< > $@
+	$(CC) -MM $(CFLAGS) $< > $@
 
 -include $(DEPS)
 
 $(BUILD_PATH)/%.rel:%.c
 	$(CC) -c $(CFLAGS) $< -o $@
-
 
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
