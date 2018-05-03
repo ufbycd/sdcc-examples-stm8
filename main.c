@@ -55,6 +55,9 @@ void Delay (uint16_t nCount);
   */
 void main(void)
 {
+	int i;
+
+	extern void test(void);
 
   /* Initialize I/Os in Output Mode */
   GPIO_Init(LED_GPIO_PORT, (GPIO_Pin_TypeDef)LED_GPIO_PINS, GPIO_MODE_OUT_PP_LOW_FAST);
@@ -64,8 +67,10 @@ void main(void)
     /* Toggles LEDs */
     GPIO_WriteReverse(LED_GPIO_PORT, (GPIO_Pin_TypeDef)LED_GPIO_PINS);
     Delay(0xFFFF);
-  }
 
+    for(i = 0; i < 100; i++)
+    	test();
+  }
 }
 
 /**
@@ -103,6 +108,10 @@ void assert_failed(uint8_t* file, uint32_t line)
 }
 #endif
 
+#ifdef __SDCC
+// 在SDCC编译器下中断服务函数必须位于main函数所在的源文件内
+#	include "stm8s_it.c"
+#endif
 /**
   * @}
   */

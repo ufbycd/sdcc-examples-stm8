@@ -1,10 +1,15 @@
 #include <string.h>
 #include "stm8s_conf.h"
 
-int uart_write(const char *str) {
-	return 0;
+static char _buf[10];
+
+int uart_write(const char *str)
+{
+	return strlen(str);
 }
 
-void test() {
-    uart_write("");
+void test(void)
+{
+	memcpy(_buf, "Hello.", 6);
+    uart_write(_buf);
 }
